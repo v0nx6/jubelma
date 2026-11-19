@@ -1,0 +1,151 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  nim          String   @unique
+  name         String
+  major        String
+  whatsapp     String
+  passwordHash String
+  createdAt    DateTime @default(now())
+
+  items           Item[]
+  cartItems       CartItem[]
+  interests       Interest[]
+  buyerOrders     Order[]        @relation("BuyerOrders")
+  sellerOrders    Order[]        @relation("SellerOrders")
+  reviewsWritten  Review[]       @relation("ReviewsWritten")
+  reviewsReceived Review[]       @relation("ReviewsReceived")
+  notifications   Notification[]
+  sessions        Session[]
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
+
+model Item {
+  id          String   @id @default(cuid())
+  code        String   @unique
+  title       String
+  description String
+  category    String
+  price       Int
+  condition   String
+  usageMonths Int
+  warrantyDays Int
+  codPoint    String
+  image       String
+  status      String   @default("AVAILABLE") // AVAILABLE | ORDERED | SOLD
+  createdAt   DateTime @default(now())
+
+  sellerId String
+  seller   User   @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+
+  cartItems CartItem[]
+  interests Interest[]
+  orders    Order[]
+  views     ItemView[]
+  reviews   Review[]
+
+  @@index([status, createdAt])
+  @@index([category])
+}
+
+model CartItem {
+  id        String   @id @default(cuid())
+  userId    String
+  itemId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  item      Item     @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, itemId])
+}
+
+model Interest {
+  id        String   @id @default(cuid())
+  itemId    String
+  buyerId   String
+  status    String   @default("WAITING") // WAITING | CHOSEN | CLOSED
+  createdAt DateTime @default(now())
+
+  item  Item @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  buyer User @relation(fields: [buyerId], references: [id], onDelete: Cascade)
+
+  @@unique([itemId, buyerId])
+}
+
+model Order {
+  id          String    @id @default(cuid())
+  itemId      String
+  buyerId     String
+  sellerId    String
+  meetPoint   String
+  status      String    @default("ORDERED") // ORDERED | COMPLETED | CANCELLED
+  createdAt   DateTime  @default(now())
+  completedAt DateTime?
+
+  item   Item    @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  buyer  User    @relation("BuyerOrders", fields: [buyerId], references: [id], onDelete: Cascade)
+  seller User    @relation("SellerOrders", fields: [sellerId], references: [id], onDelete: Cascade)
+  review Review?
+
+  @@index([buyerId, status])
+  @@index([sellerId, status])
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  orderId   String   @unique
+  itemId    String
+  sellerId  String
+  authorId  String
+  rating    Int
+  text      String
+  createdAt DateTime @default(now())
+
+  order  Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  item   Item  @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  seller User  @relation("ReviewsReceived", fields: [sellerId], references: [id], onDelete: Cascade)
+  author User  @relation("ReviewsWritten", fields: [authorId], references: [id], onDelete: Cascade)
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String // ITEM_SOLD | ORDER | NEW_INTEREST | REVIEW
+  title     String
+  body      String
+  href      String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, read])
+}
+
+model ItemView {
+  id         String   @id @default(cuid())
+  sessionKey String
+  itemId     String
+  viewedAt   DateTime @default(now())
+
+  item Item @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  @@unique([sessionKey, itemId])
+  @@index([sessionKey, viewedAt])
+}
