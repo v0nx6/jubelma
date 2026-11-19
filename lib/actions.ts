@@ -1,8 +1,6 @@
 "use server";
 
-import { randomInt, randomUUID } from "crypto";
-import { mkdir, writeFile } from "fs/promises";
-import path from "path";
+import { randomInt } from "crypto";
 import bcrypt from "bcryptjs";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -563,22 +561,17 @@ export async function createItemAction(
     };
   }
 
-  let imagePath = "";
+  let imageData = "";
   if (image instanceof File && image.size > 0) {
     if (!["image/jpeg", "image/png", "image/webp"].includes(image.type)) {
       return { error: "Foto harus berformat JPG, PNG, atau WEBP.", values };
     }
-    if (image.size > 5 * 1024 * 1024) {
-      return { error: "Ukuran foto maksimal 5 MB.", values };
+    if (image.size > 2 * 1024 * 1024) {
+      return { error: "Ukuran foto maksimal 2 MB.", values };
     }
 
-    const ext =
-      image.type === "image/png" ? "png" : image.type === "image/webp" ? "webp" : "jpg";
-    const filename = `${Date.now()}-${randomUUID().slice(0, 8)}.${ext}`;
-    const dir = path.join(process.cwd(), "public", "uploads");
-    await mkdir(dir, { recursive: true });
-    await writeFile(path.join(dir, filename), Buffer.from(await image.arrayBuffer()));
-    imagePath = `/uploads/${filename}`;
+    const buffer = Buffer.from(await image.arrayBuffer());
+    imageData = `data:${image.type};base64,${buffer.toString("base64")}`;
   } else {
     return { error: "Tambahkan minimal satu foto barang.", values };
   }
@@ -596,7 +589,7 @@ export async function createItemAction(
       usageMonths,
       warrantyDays,
       codPoint: values.codPoint,
-      image: imagePath,
+      image: imageData,
       sellerId: user.id,
     },
   });

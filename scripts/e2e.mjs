@@ -96,8 +96,8 @@ try {
   const created = await prisma.item.findFirst({ where: { title: TITLE }, orderBy: { createdAt: "desc" } });
   assert(created, "barang baru tidak tersimpan di database");
   assert(created.status === "AVAILABLE", `status awal salah: ${created.status}`);
-  assert(created.image.startsWith("/uploads/"), `foto tidak tersimpan: ${created.image}`);
-  assert((await fs.stat("public" + created.image)).size > 1000, "file foto kosong");
+  assert(created.image.startsWith("data:image/"), `foto tidak tersimpan: ${created.image.slice(0, 40)}`);
+  assert(created.image.length > 1000, "data foto kosong");
 
   await check("Logout lalu login sebagai Nadia", async () => {
     await logout();

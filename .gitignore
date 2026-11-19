@@ -5,7 +5,11 @@ out
 .env.local
 prisma/dev.db
 prisma/dev.db-journal
+prisma/schema.postgres.prisma
 public/uploads/*
 !public/uploads/.gitkeep
 
 .env
+
+.vercel
+.env*

@@ -41,7 +41,7 @@ export function ImagePicker() {
               <Icon name="plus" size={26} />
             </span>
             <span className="text-[13.5px] font-bold text-maroon">Tambahkan foto</span>
-            <span className="mt-2 text-[11.5px] text-[#8a787d]">JPG / PNG · maks. 5 MB</span>
+            <span className="mt-2 text-[11.5px] text-[#8a787d]">JPG / PNG · maks. 2 MB</span>
           </>
         )}
       </button>

@@ -10,6 +10,7 @@ Prasyarat: Node.js 20+ dan npm.
 
 ```bash
 npm install
+cp .env.example .env
 npx prisma db push
 npm run db:seed
 npm run dev
@@ -57,10 +58,20 @@ npm start
 - `prisma/schema.prisma` — model data.
 - `prisma/seed.ts` — data demo; **menghapus seluruh data lama** sebelum mengisi ulang.
 
+## Deploy ke Vercel
+
+1. Import repository ini ke Vercel (Framework: Next.js).
+2. Tambahkan resource Neon Postgres dari Vercel Marketplace dan connect ke project; Vercel akan menambahkan `DATABASE_URL` otomatis.
+3. Jalankan sekali dari komputer/local dengan `DATABASE_URL` Neon: `npm run db:deploy`.
+4. Deploy. Build command bawaan `npm run build` sudah otomatis memakai schema Postgres.
+
+Jangan jalankan `npm run db:seed` setelah deploy karena seed menghapus seluruh data produksi.
+
 ## Catatan
 
 - Database SQLite ada di `prisma/dev.db` dan dikonfigurasi lewat `DATABASE_URL="file:./dev.db"`.
-- Foto unggahan disimpan di `public/uploads/` dan disajikan oleh route handler agar langsung tersedia tanpa restart server.
+- Foto unggahan disimpan langsung di database sebagai data URL, sehingga tetap bekerja di hosting serverless tanpa storage tambahan. Batas ukuran foto 2 MB.
+- Untuk deployment Vercel + Neon/Postgres: hubungkan resource Neon agar Vercel menyuntik `DATABASE_URL`, lalu jalankan `npm run db:deploy` sekali untuk membuat tabel dan mengisi data demo. Script build otomatis memilih schema Postgres ketika `DATABASE_URL` diawali `postgres://`.
 - Tidak ada pembayaran atau pengiriman. Titik temu COD berupa teks yang disepakati lewat WhatsApp.
 - `scripts/shots.mjs` mengambil screenshot halaman untuk pemeriksaan visual.
 - `scripts/e2e.mjs` menguji alur mutasi (unggah barang, keranjang, antrean, COD, ulasan, pembatalan, registrasi, reset sandi). Jalankan dengan server aktif, lalu seed ulang setelahnya karena data demo berubah.
