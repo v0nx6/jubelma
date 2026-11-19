@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
+import { VisitorCookie } from "@/components/VisitorCookie";
 import "./globals.css";
 
 const jakarta = Plus_Jakarta_Sans({
@@ -20,7 +21,10 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="id">
-      <body className={`${jakarta.variable} font-sans`}>{children}</body>
+      <body className={`${jakarta.variable} font-sans`}>
+        <VisitorCookie />
+        {children}
+      </body>
     </html>
   );
 }
